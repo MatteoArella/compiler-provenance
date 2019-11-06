@@ -1,32 +1,37 @@
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import GridSearchCV
-from pprint import pprint
 from joblib import dump
 
 class EstimatorSelectionHelper:
-    def __init__(self, pipelines):
+    def __init__(self, pipelines, **kwargs):
         self.pipelines_ = pipelines
         self.keys_ = pipelines.keys()
         self.grid_searches_ = {}
+        self.compression_ = kwargs.get('compression', ('gzip', 6))
 
-    def fit(self, X, y, **grid_kwargs):
+    def fit(self, X, y, **kwargs):
+        dump_after_fit = grid_kwargs.get('dump_after_fit', False)
+        if dump_after_fit:
+            dirpath = kwargs['dump_dirpath']
         for key in self.keys_:
             print('Running GridSearchCV for %s.' % key)
             pipeline = self.pipelines_[key]['pipeline']
             params = self.pipelines_[key].get('hyperparams', {})
-            grid_params = { **grid_kwargs, **self.pipelines_[key].get('grid_params', {}) }
-            pprint(grid_params)
+            grid_params = { **kwargs, **self.pipelines_[key].get('grid_params', {}) }
             grid_search = GridSearchCV(pipeline, params, **grid_params)
-            #with parallel_backend('threading'):
             grid_search.fit(X, y)
-            self.grid_searches_[key] = grid_search        
+            self.grid_searches_[key] = grid_search
+            if dump_after_fit:
+                dump(grid_search, '%s/grid_search-%s.joblib' % (dirpath, key), compress=compression)
+                dump(grid_search.best_estimator_, '%s/pipeline-%s.joblib' % (dirpath, key), compress=compression)
     
-    def dump(self, dirpath):
+    def dump(self, dirpath, **kwargs):
+        compression = kwargs.get('compression', self.compression_)
         for key in self.keys_:
             grid_search = self.grid_searches_[key]
-            dump(grid_search, '%s/grid_search-%s.joblib' % (dirpath, key), compress=('gzip', 6))
-            dump(grid_search.best_estimator_, '%s/pipeline-%s.joblib' % (dirpath, key), compress=('gzip', 6))
+            dump(grid_search, '%s/grid_search-%s.joblib' % (dirpath, key), compress=compression)
+            dump(grid_search.best_estimator_, '%s/pipeline-%s.joblib' % (dirpath, key), compress=compression)
 
     def score_summary(self, sort_by='mean_test_score'):
         frames = []

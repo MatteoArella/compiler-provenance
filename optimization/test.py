@@ -1,48 +1,33 @@
-from joblib import load, dump
-from sys import exit
+from joblib import load
 
-from preprocessing import AbstractedAsmTransformer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.svm import SVC
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.pipeline import Pipeline
+from sklearn.metrics import classification_report, roc_auc_score, confusion_matrix
+from sklearn.preprocessing import LabelEncoder
 
-from hyperparameter import EstimatorSelectionHelper
-from datetime import date
-import os
-import numpy as np
-from pprint import pprint
+#import numpy as np
 
-test = load('test.joblib')
-X_test, y_test = test['instructions'], test['target']
+class ClassificationTester:
+    def __init__(self, test_set_path, **kwargs):
+        self.test_set_path_ = test_set_path
 
-gridBayes = load('31-10-2019/grid_search-MultinomialNVClassifier.joblib')
-gridSVM = load('31-10-2019/grid_search-SVMClassifier.joblib')
-pipelineBayes = load('31-10-2019/pipeline-MultinomialNVClassifier.joblib')
-pipelineSVM = load('31-10-2019/pipeline-SVMClassifier.joblib')
+    def fit(self, fitted_path):
+        self.fitted_path_ = fitted_path
+        test = load(self.test_set_path_)
+        self.X_test_, y_test = test['instructions'], test['target']
+        self.summary_ = load('{}/summary.joblib'.format(self.fitted_path_))
+        self.target_encoder_ = LabelEncoder()
+        self.y_test_ = self.target_encoder_.fit_transform(y_test)
+        self.classifiers_ = self.summary_['estimator'].unique()
+        self.pipelines_ = [ load('{}/pipeline-{}.joblib'.format(self.fitted_path_, i)) for i in self.classifiers_]
+        #self.scores_ = [ roc_auc_score(self.y_test_, self.target_encoder_.transform(i.predict(self.X_test_))) for i in self.pipelines_]
+        #self.best_estimator_ = self.pipelines_[np.argmax(self.scores_)]
+        return self
 
-for i in range(0,len(gridBayes.cv_results_['params'])):
-    print("[%2d] params: %s  \tscore: %.3f +/- %.3f" %(i,
-        gridBayes.cv_results_['params'][i],
-        gridBayes.cv_results_['mean_test_score'][i],
-        gridBayes.cv_results_['std_test_score'][i] ))
+    def predict(self):
+        self.predictions_ = [ i.predict(self.X_test_) for i in self.pipelines_ ]
+        return self
 
-a = np.argmax(gridBayes.cv_results_['mean_test_score'])
-bestparams = gridBayes.cv_results_['params'][a]
-bestscore = gridBayes.cv_results_['mean_test_score'][a]
+    def classification_reports(self):
+        return [(i, classification_report(self.y_test_, self.target_encoder_.transform(j))) for i, j in zip(self.classifiers_, self.predictions_)]
 
-print("Best configuration [%d] %r  %.3f" %(a,bestparams,bestscore))
-pprint(bestparams)
-
-for i in range(0,len(gridSVM.cv_results_['params'])):
-    print("[%2d] params: %s  \tscore: %.3f +/- %.3f" %(i,
-        gridSVM.cv_results_['params'][i],
-        gridSVM.cv_results_['mean_test_score'][i],
-        gridSVM.cv_results_['std_test_score'][i] ))
-
-a = np.argmax(gridSVM.cv_results_['mean_test_score'])
-bestparams = gridSVM.cv_results_['params'][a]
-bestscore = gridSVM.cv_results_['mean_test_score'][a]
-
-print("Best configuration [%d] %r  %.3f" %(a,bestparams,bestscore))
-pprint(bestparams)
+    def confusion_matrixes(self):
+        return [(i, confusion_matrix(self.y_test_, self.target_encoder_.transform(j))) for i, j in zip(self.classifiers_, self.predictions_)]

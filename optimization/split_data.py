@@ -6,21 +6,26 @@ from sklearn.utils import shuffle
 from pandas.io.json import json_normalize
 from pandas import DataFrame
 
-from joblib import dump # model persistance
+from os import path
+from joblib import dump
 
 class DataSplit:
-    def __init__(self, test_size=0.2, **kwargs):
-        self.input_file = '../../train_dataset.jsonl'
+    def __init__(self, dataset_path, test_size=0.2, **kwargs):
+        self.input_file = dataset_path
         self.train_output = kwargs.get('train_output', 'train.joblib')
         self.test_output = kwargs.get('test_output', 'test.joblib')
         self.force = kwargs.get('force', False)
         self.test_size = test_size
         self.random_state = kwargs.get('random_state', 15)
 
+        if not self.force and path.exists(self.train_output) or path.exists(self.test_output):
+            pass
+
         with open(self.input_file, 'r', encoding='utf-8') as jsonl_file:
             data = np.asarray([json.loads(jline.strip()) for jline in jsonl_file])
 
         data = json_normalize(data)
+
         all_instructions = data['instructions']
         y_all = data['opt']
 
@@ -40,4 +45,4 @@ class DataSplit:
         dump(self.test, self.test_output, compress=('gzip', 6))
 
 if __name__ == '__main__':
-    DataSplit(random_state=25)
+    DataSplit(dataset_path='../../train_dataset.jsonl', random_state=25)
