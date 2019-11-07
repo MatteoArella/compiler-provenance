@@ -11,7 +11,7 @@ class EstimatorSelectionHelper:
         self.compression_ = kwargs.get('compression', ('gzip', 6))
 
     def fit(self, X, y, **kwargs):
-        dump_after_fit = grid_kwargs.get('dump_after_fit', False)
+        dump_after_fit = kwargs.get('dump_after_fit', False)
         if dump_after_fit:
             dirpath = kwargs['dump_dirpath']
         for key in self.keys_:

@@ -1,3 +1,7 @@
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+
 from ..common.hyperparameter import EstimatorSelectionHelper
 from ..common.preprocessing import AbstractedAsmTransformer
 from joblib import load, dump
@@ -7,12 +11,12 @@ from imblearn.over_sampling import RandomOverSampler, SMOTE
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
-
+from sklearn.model_selection import KFold
 from datetime import date
 import os
 
-train = load('train.joblib')
-test = load('test.joblib')
+train = load('code/optimization/train.joblib')
+test = load('code/optimization/test.joblib')
 
 X_train, y_train = train['instructions'], train['target']
 X_test, y_test = test['instructions'], test['target']
@@ -23,6 +27,7 @@ asmTransformer = AbstractedAsmTransformer()
 overSampler = RandomOverSampler(random_state=random_state)
 SMOTESampler = SMOTE(random_state=random_state)
 underSampler = RandomUnderSampler(random_state=random_state)
+kf = KFold(n_splits=5, random_state=random_state, shuffle=False)
 
 pipelines = {
     'ROSLogisticRegression': { #over-sampling
@@ -94,10 +99,10 @@ pipelines = {
     }
 }
 
-dirpath = date.today().strftime('%d-%m-%Y')
+dirpath = date.today().strftime('code/optimization/%d-%m-%Y')
 
 estimator = EstimatorSelectionHelper(pipelines)
-estimator.fit(X_train, y_train, scoring='roc_auc', cv=5, n_jobs=-1, verbose=10)
+estimator.fit(X_train, y_train, scoring='roc_auc', cv=kf, n_jobs=1, verbose=10)
 summary = estimator.score_summary()
 print(summary)
 
