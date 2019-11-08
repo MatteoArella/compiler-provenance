@@ -4,38 +4,35 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     import numpy as np
     from sklearn.preprocessing import LabelEncoder
-    from sklearn.metrics import precision_score, roc_auc_score, roc_curve
+    from sklearn.metrics import accuracy_score
     from pprint import pprint
     import pandas as pd
 
-    from sklearn.tree import export_graphviz
-    from subprocess import call
-    from code.common.classification_tester import ClassificationTester, plot_confusion_matrix, plot_roc_curve
-    import sklearn.metrics
+    from code.common.classification_tester import ClassificationTester
 
     data = load('code/train_dataset.joblib')
-    test = load('code/optimization/test.joblib')
+    test = load('code/compiler/test.joblib')
     X_test, y_test = test['instructions'], test['target']
     '''
     tester = ClassificationTester() \
-                        .pipelines_load(pipelines_path='code/optimization/07-11-2019', \
+                        .pipelines_load(pipelines_path='code/compiler/31-10-2019', \
                                         summary_name='summary.joblib') \
                         .pipelines_predict(X_test)
 
-    best_classifier_name, best_pipeline = tester.pipelines_scoring(y_test, scoring=roc_auc_score)
-    dump(tester, 'code/optimization/tester.joblib', compress=('gzip', 6))
+    best_classifier_name, best_pipeline = tester.pipelines_scoring(y_test, scoring=accuracy_score)
+    dump(tester, 'code/compiler/tester.joblib', compress=('gzip', 6))
     df = tester.classification_reports()
-    dump(df, 'code/optimization/reports.joblib', compress=('gzip', 6))
+    dump(df, 'code/compiler/reports.joblib', compress=('gzip', 6))
     '''
-    '''
-    #tester = load('code/optimization/tester.joblib')
-    reports = load('code/optimization/reports.joblib').T
+    
+    tester = load('code/optimization/tester.joblib')
+    reports = load('code/compiler/reports.joblib').T
     #reports['report'].apply(lambda x: print(x))
     for i, val in reports.stack().iteritems():
         print(i)
         print(val)
         print()
-    '''
+
     '''
     import scikitplot as skplt
     for classifier, predict, proba in zip(tester.classifiers_, tester.predictions_, tester.predictions_proba_):

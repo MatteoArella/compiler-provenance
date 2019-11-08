@@ -10,21 +10,13 @@ class AbstractedAsmTransformer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X, y=None):
+        '''
         result = []
         for instruction in X:
             result.append(' '.join([ i.split(' ')[0] for i in instruction ]))
         return np.asarray(result)
+        '''
+        return [' '.join([ i.split(' ')[0] for i in instruction ]) for instruction in X]
 
     def fit_transform(self, X, y=None, **fit_params):
         return self.fit(X, y).transform(X, y)
-
-class OptLevelLabelEncoder(BaseEstimator, TransformerMixin):
-    def __init__(self, *args, **kwargs):
-        self.encoder = LabelEncoder(*args, **kwargs)
-
-    def fit(self, x, y=None):
-        self.encoder.fit(y)
-        return self
-
-    def transform(self, x, y=None):
-        return self.encoder.transform(y)

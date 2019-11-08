@@ -15,7 +15,7 @@ class EstimatorSelectionHelper:
         if dump_after_fit:
             dirpath = kwargs['dump_dirpath']
         for key in self.keys_:
-            print('Running GridSearchCV for %s.' % key)
+            print('Running GridSearchCV for {}.'.format(key))
             pipeline = self.pipelines_[key]['pipeline']
             params = self.pipelines_[key].get('hyperparams', {})
             grid_params = { **kwargs, **self.pipelines_[key].get('grid_params', {}) }
@@ -23,15 +23,15 @@ class EstimatorSelectionHelper:
             grid_search.fit(X, y)
             self.grid_searches_[key] = grid_search
             if dump_after_fit:
-                dump(grid_search, '%s/grid_search-%s.joblib' % (dirpath, key), compress=compression)
-                dump(grid_search.best_estimator_, '%s/pipeline-%s.joblib' % (dirpath, key), compress=compression)
+                dump(grid_search, '{}/grid_search-{}.joblib'.format(dirpath, key), compress=compression)
+                dump(grid_search.best_estimator_, '{}/pipeline-{}.joblib'.format(dirpath, key), compress=compression)
     
     def dump(self, dirpath, **kwargs):
         compression = kwargs.get('compression', self.compression_)
         for key in self.keys_:
             grid_search = self.grid_searches_[key]
-            dump(grid_search, '%s/grid_search-%s.joblib' % (dirpath, key), compress=compression)
-            dump(grid_search.best_estimator_, '%s/pipeline-%s.joblib' % (dirpath, key), compress=compression)
+            dump(grid_search, '{}/grid_search-{}.joblib'.format(dirpath, key), compress=compression)
+            dump(grid_search.best_estimator_, '{}/pipeline-{}.joblib'.format(dirpath, key), compress=compression)
 
     def score_summary(self, sort_by='mean_test_score'):
         frames = []
