@@ -99,12 +99,13 @@ if __name__ == '__main__'
             'pipeline': ImblearnPipeline([
                             ('asm_prep', asmTransformer),
                             ('tfidf', TfidfVectorizer(analyzer='word', use_idf=True)),
-                            ('clf', SVC(gamma='scale', kernel='rbf', class_weight='balanced'))
+                            ('clf', SVC(gamma='scale', class_weight='balanced'))
                         ]),
             'hyperparams': {
                         'tfidf__ngram_range': [(1, 2), (1, 3), (1, 4), (1, 5),
                                             (2, 2), (3, 3), (4, 4), (5, 5)],
-                        'clf__C': [0.1, 1, 10]
+                        'clf__kernel': ['linear', 'poly', 'rbf'],
+                        'clf__C': [0.01, 0.1, 1, 10, 100],
             }
         }
     }

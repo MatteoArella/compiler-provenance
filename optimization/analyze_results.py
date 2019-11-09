@@ -11,14 +11,18 @@ if __name__ == '__main__':
     from sklearn.tree import export_graphviz
     from subprocess import call
     from code.common.classification_tester import ClassificationTester, plot_confusion_matrix, plot_roc_curve
-    import sklearn.metrics
+    from sys import argv, exit
 
-    data = load('code/train_dataset.joblib')
+    if len(argv) < 2:
+        print('usage: {} <path>'.format(argv[0]))
+        exit(1)
+    path = argv[1]
+
     test = load('code/optimization/test.joblib')
     X_test, y_test = test['instructions'], test['target']
     '''
     tester = ClassificationTester() \
-                        .pipelines_load(pipelines_path='code/optimization/07-11-2019', \
+                        .pipelines_load(pipelines_path='code/optimization/{}'.format(path), \
                                         summary_name='summary.joblib') \
                         .pipelines_predict(X_test)
 
@@ -26,13 +30,15 @@ if __name__ == '__main__':
     dump(tester, 'code/optimization/tester.joblib', compress=('gzip', 6))
     df = tester.classification_reports()
     dump(df, 'code/optimization/reports.joblib', compress=('gzip', 6))
+    dump(best_pipeline, 'code/optimization/bestmodel.joblib', compress=('gzip', 6))
     '''
     '''
-    #tester = load('code/optimization/tester.joblib')
+    # get classification reports
+    tester = load('code/optimization/tester.joblib')
     reports = load('code/optimization/reports.joblib').T
     #reports['report'].apply(lambda x: print(x))
-    for i, val in reports.stack().iteritems():
-        print(i)
+    for (i, val), score in zip(reports.stack().iteritems(), tester.scores_):
+        print('{}: {}'.format(i[0], score))
         print(val)
         print()
     '''
@@ -52,6 +58,7 @@ if __name__ == '__main__':
     '''
     '''
     # plot classes count
+    data = load('code/train_dataset.joblib')
     counts = data['opt'].value_counts(normalize=True).apply(lambda x: x*100)
     ax = counts.plot(kind='bar', rot=0)
     plt.ylim(0, 100)
@@ -61,12 +68,13 @@ if __name__ == '__main__':
     plt.xlabel('Classes')
     plt.ylabel('Classes count (%)')
     plt.savefig('report/images/opt/classes-count.pdf', bbox_inches='tight')
-
+    '''
     # get best n-gram range
+    summary = load('code/optimization/{}/summary.joblib'.format(path))
     print('Best N-gram range: {}'.format(summary.iloc[0]['params']['tfidf__ngram_range']))
-
+    '''
     # plot decision tree graph (show only first 5 levels)
-    pipeline = load('code/optimization/07-11-2019/pipeline-RandomForestClassifier.joblib')
+    pipeline = load('code/optimization/{}/pipeline-RandomForestClassifier.joblib'.format(path))
     tfidf = pipeline['tfidf']
     clf = pipeline['clf']
 
@@ -80,7 +88,7 @@ if __name__ == '__main__':
     '''
     # plot important features
     '''
-    pipeline = load('04-11-2019/pipeline-RandomForestClassifier.joblib')
+    pipeline = load('{}/pipeline-RandomForestClassifier.joblib'.format(path))
     tfidf = pipeline['tfidf']
     clf = pipeline['clf']
     indices = np.argsort(clf.feature_importances_)[::-1][:10]

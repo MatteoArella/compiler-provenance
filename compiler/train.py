@@ -29,7 +29,7 @@ if __name__ == '__main__'
                                         ('tfidf', TfidfVectorizer(analyzer='word', use_idf=True)),
                                         ('clf', SVC(gamma='scale', probability=True))
                                     ]),
-                            'params': {
+                            'hyperparams': {
                                 'tfidf__ngram_range': [(1,2), (1,3), (1,4), (1,5),
                                                     (2,2), (3,3), (4,4), (5,5)],
                                 'clf__kernel': ['linear', 'poly', 'rbf'],
@@ -41,7 +41,7 @@ if __name__ == '__main__'
                                         ('tfidf', TfidfVectorizer(analyzer='word', use_idf=True)),
                                         ('clf', MultinomialNB())
                                     ]),
-                                    'params': {
+                                    'hyperparams': {
                                         'tfidf__ngram_range': [(1,2), (1,3), (1,4), (1,5),
                                                                 (2,2), (3,3), (4,4), (5,5)],
                                     }
