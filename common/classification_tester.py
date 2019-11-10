@@ -1,6 +1,6 @@
 from joblib import load
 
-from sklearn.metrics import f1_score, classification_report, confusion_matrix
+from sklearn.metrics import f1_score, classification_report
 from sklearn.preprocessing import LabelEncoder
 
 import numpy as np
@@ -8,53 +8,6 @@ import pandas as pd
 
 import sys
 sys.path.append('code/common')
-
-def plot_confusion_matrix(confusion_matrix, classes,
-                          normalize=False,
-                          title=None,
-                          cmap='Blues'):
-    
-    from sklearn.utils.multiclass import unique_labels
-    import matplotlib.pyplot as plt
-
-    if normalize:
-        cm = confusion_matrix.astype('float') / confusion_matrix.sum(axis=1)[:, np.newaxis]
-    else:
-        cm = confusion_matrix
-
-    fig, ax = plt.subplots()
-    im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
-    ax.figure.colorbar(im, ax=ax)
-    ax.set(xticks=np.arange(cm.shape[1]),
-           yticks=np.arange(cm.shape[0]),
-           xticklabels=classes, yticklabels=classes,
-           title=title,
-           ylabel='True label',
-           xlabel='Predicted label')
-
-    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
-             rotation_mode="anchor")
-
-    # Loop over data dimensions and create text annotations.
-    fmt = '.2f' if normalize else 'd'
-    thresh = cm.max() / 2.
-    for i in range(cm.shape[0]):
-        for j in range(cm.shape[1]):
-            ax.text(j, i, format(cm[i, j], fmt),
-                    ha="center", va="center",
-                    color="white" if cm[i, j] > thresh else "black")
-    fig.tight_layout()
-    return ax
-
-def plot_roc_curve(fpr, tpr, roc_auc):
-    import matplotlib.pyplot as plt
-    plt.plot(fpr, tpr, label='ROC curve (area = %0.3f)' % roc_auc)
-    plt.plot([0, 1], [0, 1], 'k--')  # random predictions curve
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.0])
-    plt.xlabel('False Positive Rate or (1 - Specifity)')
-    plt.ylabel('True Positive Rate or (Sensitivity)')
-    plt.legend(loc="lower right")
 
 class ClassificationTester:
     def pipelines_load(self, pipelines_path, summary_name):
@@ -73,7 +26,7 @@ class ClassificationTester:
         scoring_average = kwargs.get('average')
         self.y_test_ = y_true
         y = self.target_encoder_.fit_transform(y_true)
-        if scoring_average not None:
+        if scoring_average is not None:
             self.scores_ = [ scoring(y, self.target_encoder_.transform(i), average=scoring_average) for i in self.predictions_ ]
         else:
             self.scores_ = [ scoring(y, self.target_encoder_.transform(i)) for i in self.predictions_ ]
@@ -82,4 +35,4 @@ class ClassificationTester:
         return self.best_classifier_, self.best_estimator_
 
     def classification_reports(self):
-        return pd.DataFrame({ i: { 'report': classification_report(self.y_test_, j) }  for i, j in zip(self.classifiers_, self.predictions_)})
+        return pd.DataFrame({ i: { 'report': classification_report(self.y_test_, j) }  for i, j in zip(self.classifiers_, self.predictions_)}).T

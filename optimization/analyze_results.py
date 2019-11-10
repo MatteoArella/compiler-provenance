@@ -1,16 +1,13 @@
 if __name__ == '__main__':
     from joblib import load, dump
-    import json
     import matplotlib.pyplot as plt
     import numpy as np
-    from sklearn.preprocessing import LabelEncoder
-    from sklearn.metrics import precision_score, f1_score, roc_auc_score
-    from pprint import pprint
-    import pandas as pd
+    from sklearn.metrics import f1_score
 
     from sklearn.tree import export_graphviz
     from subprocess import call
-    from code.common.classification_tester import ClassificationTester, plot_confusion_matrix, plot_roc_curve
+    import scikitplot as skplt
+    from code.common.classification_tester import ClassificationTester
     from sys import argv, exit
 
     if len(argv) < 2:
@@ -28,7 +25,7 @@ if __name__ == '__main__':
 
     best_classifier_name, best_pipeline = tester.pipelines_scoring(y_test, scoring=f1_score, average='weighted')
     dump(tester, 'code/optimization/tester.joblib', compress=('gzip', 6))
-    reports = tester.classification_reports().T
+    reports = tester.classification_reports()
     dump(reports, 'code/optimization/reports.joblib', compress=('gzip', 6))
     dump(best_pipeline, 'code/optimization/bestmodel.joblib', compress=('gzip', 6))
 
@@ -38,7 +35,6 @@ if __name__ == '__main__':
         print()
 
     # plot ROC curve, precision-recall curve, confusion matrix
-    import scikitplot as skplt
     for classifier, predict, proba in zip(tester.classifiers_, tester.predictions_, tester.predictions_proba_):
         skplt.metrics.plot_roc(y_test, proba, title='')
         plt.savefig('report/images/opt/curves/{}-roc-curve.pdf'.format(classifier), bbox_inches='tight')

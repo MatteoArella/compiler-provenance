@@ -1,15 +1,11 @@
 if __name__ == '__main__':
     from joblib import load, dump
-    import json
     import matplotlib.pyplot as plt
-    import numpy as np
-    from sklearn.preprocessing import LabelEncoder
-    from sklearn.metrics import accuracy_score, confusion_matrix
-    from pprint import pprint
-    import pandas as pd
+    import scikitplot as skplt
+    from sklearn.metrics import accuracy_score
     from sys import argv, exit
 
-    from code.common.classification_tester import ClassificationTester, plot_confusion_matrix
+    from code.common.classification_tester import ClassificationTester
 
     if len(argv) < 2:
         print('usage: {} <path>'.format(argv[0]))
@@ -26,7 +22,7 @@ if __name__ == '__main__':
 
     best_classifier_name, best_pipeline = tester.pipelines_scoring(y_test, scoring=accuracy_score)
     dump(tester, 'code/compiler/tester.joblib', compress=('gzip', 6))
-    reports = tester.classification_reports().T
+    reports = tester.classification_reports()
     dump(reports, 'code/compiler/reports.joblib', compress=('gzip', 6))
     dump(best_pipeline, 'code/compiler/bestmodel.joblib', compress=('gzip', 6))
 
@@ -36,7 +32,6 @@ if __name__ == '__main__':
         print(val)
         print()
     
-    import scikitplot as skplt
     for classifier, predict, proba in zip(tester.classifiers_, tester.predictions_, tester.predictions_proba_):
         skplt.metrics.plot_roc(y_test, proba, title='')
         plt.savefig('report/images/comp/curves/{}-roc-curve.pdf'.format(classifier), bbox_inches='tight')

@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 from sklearn.model_selection import GridSearchCV
 from joblib import dump
@@ -14,6 +13,7 @@ class EstimatorSelectionHelper:
         dump_after_fit = kwargs.get('dump_after_fit', False)
         if dump_after_fit:
             dirpath = kwargs['dump_dirpath']
+        compression = kwargs.get('compression', self.compression_)
         for key in self.keys_:
             print('Running GridSearchCV for {}.'.format(key))
             pipeline = self.pipelines_[key]['pipeline']

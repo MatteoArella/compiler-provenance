@@ -1,6 +1,4 @@
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import LabelEncoder
-import numpy as np
 
 '''
 Transform assembly into abstract assembly, i.e. consider only instructions' mnemonics
