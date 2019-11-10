@@ -9,8 +9,8 @@ if __name__ == '__main__':
     from datetime import date
     import os
 
-    train = load('code/optimization/train.joblib')
-    test = load('code/optimization/test.joblib')
+    train = load('code/compiler/train.joblib')
+    test = load('code/compiler/test.joblib')
 
     X_train, y_train = train['instructions'], train['target']
     X_test, y_test = test['instructions'], test['target']
