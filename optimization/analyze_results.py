@@ -4,7 +4,7 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     import numpy as np
     from sklearn.preprocessing import LabelEncoder
-    from sklearn.metrics import precision_score, roc_auc_score, roc_curve
+    from sklearn.metrics import precision_score, f1_score, roc_auc_score
     from pprint import pprint
     import pandas as pd
 
@@ -20,29 +20,24 @@ if __name__ == '__main__':
 
     test = load('code/optimization/test.joblib')
     X_test, y_test = test['instructions'], test['target']
-    '''
+
     tester = ClassificationTester() \
                         .pipelines_load(pipelines_path='code/optimization/{}'.format(path), \
                                         summary_name='summary.joblib') \
                         .pipelines_predict(X_test)
 
-    best_classifier_name, best_pipeline = tester.pipelines_scoring(y_test, scoring=roc_auc_score)
+    best_classifier_name, best_pipeline = tester.pipelines_scoring(y_test, scoring=f1_score, average='weighted')
     dump(tester, 'code/optimization/tester.joblib', compress=('gzip', 6))
-    df = tester.classification_reports()
-    dump(df, 'code/optimization/reports.joblib', compress=('gzip', 6))
+    reports = tester.classification_reports().T
+    dump(reports, 'code/optimization/reports.joblib', compress=('gzip', 6))
     dump(best_pipeline, 'code/optimization/bestmodel.joblib', compress=('gzip', 6))
-    '''
-    '''
-    # get classification reports
-    tester = load('code/optimization/tester.joblib')
-    reports = load('code/optimization/reports.joblib').T
-    #reports['report'].apply(lambda x: print(x))
+
     for (i, val), score in zip(reports.stack().iteritems(), tester.scores_):
         print('{}: {}'.format(i[0], score))
         print(val)
         print()
-    '''
-    '''
+
+    # plot ROC curve, precision-recall curve, confusion matrix
     import scikitplot as skplt
     for classifier, predict, proba in zip(tester.classifiers_, tester.predictions_, tester.predictions_proba_):
         skplt.metrics.plot_roc(y_test, proba, title='')
@@ -51,12 +46,7 @@ if __name__ == '__main__':
         plt.savefig('report/images/opt/curves/{}-prec-recall-curve.pdf'.format(classifier), bbox_inches='tight')
         skplt.metrics.plot_confusion_matrix(y_test, predict, title='', normalize=True)
         plt.savefig('report/images/opt/{}-cm.pdf'.format(classifier), bbox_inches='tight')
-    '''
-    '''
-    #print('Best classificator: {}'.format(best_classifier_name))
-    #print('Best pipeline: {}'.format(best_pipeline))
-    '''
-    '''
+
     # plot classes count
     data = load('code/train_dataset.joblib')
     counts = data['opt'].value_counts(normalize=True).apply(lambda x: x*100)
@@ -64,38 +54,33 @@ if __name__ == '__main__':
     plt.ylim(0, 100)
     for i in ax.patches:
         ax.text(i.get_x()+.08, i.get_height()/2, '%.2f%%' % i.get_height(), fontsize=16, color='white')
-
     plt.xlabel('Classes')
     plt.ylabel('Classes count (%)')
     plt.savefig('report/images/opt/classes-count.pdf', bbox_inches='tight')
-    '''
+
     # get best n-gram range
     summary = load('code/optimization/{}/summary.joblib'.format(path))
     print('Best N-gram range: {}'.format(summary.iloc[0]['params']['tfidf__ngram_range']))
-    '''
-    # plot decision tree graph (show only first 5 levels)
+
+    # plot decision tree graph (show only until depth 4)
     pipeline = load('code/optimization/{}/pipeline-RandomForestClassifier.joblib'.format(path))
     tfidf = pipeline['tfidf']
     clf = pipeline['clf']
 
-    export_graphviz(clf.estimators_[2], out_file='tree-big.dot', 
+    export_graphviz(clf.estimators_[2], out_file='decision-tree.dot', 
                     feature_names = tfidf.get_feature_names(),
-                    class_names = ['H', 'L'],
+                    class_names = ['H', 'L'], max_depth=4,
                     rounded = True, proportion = False,
                     precision = 2, filled = True)
 
-    call(['dot', '-Tpdf', 'tree-big.dot', '-o', 'tree-big.pdf'])
-    '''
+    call(['dot', '-Tpdf', 'decision-tree.dot', '-o', 'report/images/opt/decision-tree.pdf'])
+
     # plot important features
-    '''
-    pipeline = load('{}/pipeline-RandomForestClassifier.joblib'.format(path))
+    pipeline = load('code/optimization/{}/pipeline-RandomForestClassifier.joblib'.format(path))
     tfidf = pipeline['tfidf']
     clf = pipeline['clf']
     indices = np.argsort(clf.feature_importances_)[::-1][:10]
     features = [tfidf.get_feature_names()[i] for i in indices]
 
-    plt.title('Feature Importances')
     plt.barh(features, clf.feature_importances_[indices], color='b', align='center')
-
-    plt.show()
-    '''
+    plt.savefig('report/images/opt/feature-importances.pdf', bbox_inches='tight')

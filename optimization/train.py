@@ -1,4 +1,4 @@
-if __name__ == '__main__'
+if __name__ == '__main__':
     from code.common.hyperparameter import EstimatorSelectionHelper
     from code.common.preprocessing import AbstractedAsmTransformer
     from joblib import load, dump
@@ -22,9 +22,6 @@ if __name__ == '__main__'
     random_state=25
 
     asmTransformer = AbstractedAsmTransformer()
-    overSampler = RandomOverSampler(random_state=random_state)
-    SMOTESampler = SMOTE(random_state=random_state)
-    underSampler = RandomUnderSampler(random_state=random_state)
     kf = KFold(n_splits=5, random_state=random_state, shuffle=False)
 
     pipelines = {
@@ -32,7 +29,7 @@ if __name__ == '__main__'
             'pipeline': ImblearnPipeline([
                             ('asm_prep', asmTransformer),
                             ('tfidf', TfidfVectorizer(analyzer='word', use_idf=True)),
-                            ('sampler', overSampler),
+                            ('sampler', RandomOverSampler(random_state=random_state)),
                             ('clf', LogisticRegression(n_jobs=-1))
                         ]),
             'hyperparams': {
@@ -46,7 +43,7 @@ if __name__ == '__main__'
             'pipeline': ImblearnPipeline([
                             ('asm_prep', asmTransformer),
                             ('tfidf', TfidfVectorizer(analyzer='word', use_idf=True)),
-                            ('sampler', SMOTESampler),
+                            ('sampler', SMOTE(random_state=random_state)),
                             ('clf', LogisticRegression(n_jobs=-1))
                         ]),
             'hyperparams': {
@@ -60,7 +57,7 @@ if __name__ == '__main__'
             'pipeline': ImblearnPipeline([
                             ('asm_prep', asmTransformer),
                             ('tfidf', TfidfVectorizer(analyzer='word', use_idf=True)),
-                            ('sampler', underSampler),
+                            ('sampler', RandomUnderSampler(random_state=random_state)),
                             ('clf', LogisticRegression(n_jobs=-1))
                         ]),
             'hyperparams': {
@@ -99,11 +96,11 @@ if __name__ == '__main__'
             'pipeline': ImblearnPipeline([
                             ('asm_prep', asmTransformer),
                             ('tfidf', TfidfVectorizer(analyzer='word', use_idf=True)),
-                            ('clf', SVC(gamma='scale', class_weight='balanced'))
+                            ('clf', SVC(gamma='scale', class_weight='balanced', probability=True))
                         ]),
             'hyperparams': {
-                        'tfidf__ngram_range': [(1, 2), (1, 3), (1, 4), (1, 5),
-                                            (2, 2), (3, 3), (4, 4), (5, 5)],
+                        'tfidf__ngram_range': [(1,2), (1,3), (1,4), (1,5),
+                                               (2,2), (3,3), (4,4), (5,5)],
                         'clf__kernel': ['linear', 'poly', 'rbf'],
                         'clf__C': [0.01, 0.1, 1, 10, 100],
             }
@@ -113,7 +110,7 @@ if __name__ == '__main__'
     dirpath = date.today().strftime('code/optimization/%d-%m-%Y')
 
     estimator = EstimatorSelectionHelper(pipelines)
-    estimator.fit(X_train, y_train, scoring='roc_auc', cv=kf, n_jobs=1, verbose=10)
+    estimator.fit(X_train, y_train, scoring='f1_weighted', cv=kf, n_jobs=1, verbose=10)
     summary = estimator.score_summary()
     print(summary)
 
