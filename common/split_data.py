@@ -28,7 +28,7 @@ class DataShuffleSplit:
         data = json_normalize(data)
 
         all_instructions = data['instructions']
-        y_all = data['opt']
+        y_all = data[target_label]
 
         X_all, y_all = shuffle(all_instructions, y_all)
 
