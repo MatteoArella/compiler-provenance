@@ -1,6 +1,6 @@
 if __name__ == '__main__':
-    from code.common.hyperparameter import EstimatorSelectionHelper
-    from code.common.preprocessing import AbstractedAsmTransformer
+    from compiler-provenance.common.hyperparameter import EstimatorSelectionHelper
+    from compiler-provenance.common.preprocessing import AbstractedAsmTransformer
     from joblib import load, dump
     from imblearn.pipeline import Pipeline as ImblearnPipeline
     from imblearn.under_sampling import RandomUnderSampler
@@ -13,8 +13,8 @@ if __name__ == '__main__':
     from datetime import date
     import os
 
-    train = load('code/optimization/train.joblib')
-    test = load('code/optimization/test.joblib')
+    train = load('compiler-provenance/optimization/train.joblib')
+    test = load('compiler-provenance/optimization/test.joblib')
 
     X_train, y_train = train['instructions'], train['target']
     X_test, y_test = test['instructions'], test['target']
@@ -107,7 +107,7 @@ if __name__ == '__main__':
         }
     }
 
-    dirpath = date.today().strftime('code/optimization/%d-%m-%Y')
+    dirpath = date.today().strftime('compiler-provenance/optimization/%d-%m-%Y')
 
     estimator = EstimatorSelectionHelper(pipelines)
     estimator.fit(X_train, y_train, scoring='f1_weighted', cv=kf, n_jobs=1, verbose=10)

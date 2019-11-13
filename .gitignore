@@ -4,3 +4,5 @@ __pycache__
 *.joblib
 *.jsonl
 *.csv
+images
+

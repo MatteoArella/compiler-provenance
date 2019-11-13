@@ -1,6 +1,6 @@
 if __name__ == '__main__':
-    from code.common.hyperparameter import EstimatorSelectionHelper
-    from code.common.preprocessing import AbstractedAsmTransformer
+    from compiler-provenance.common.hyperparameter import EstimatorSelectionHelper
+    from compiler-provenance.common.preprocessing import AbstractedAsmTransformer
     from joblib import load, dump
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.pipeline import Pipeline
@@ -9,8 +9,8 @@ if __name__ == '__main__':
     from datetime import date
     import os
 
-    train = load('code/compiler/train.joblib')
-    test = load('code/compiler/test.joblib')
+    train = load('compiler-provenance/compiler/train.joblib')
+    test = load('compiler-provenance/compiler/test.joblib')
 
     X_train, y_train = train['instructions'], train['target']
     X_test, y_test = test['instructions'], test['target']
@@ -44,7 +44,7 @@ if __name__ == '__main__':
         }
     }
 
-    dirpath = date.today().strftime('code/compiler/%d-%m-%Y')
+    dirpath = date.today().strftime('compiler-provenance/compiler/%d-%m-%Y')
 
     estimator = EstimatorSelectionHelper(pipelines)
     estimator.fit(X_train, y_train, cv=5, n_jobs=-1, iid=False, verbose=10)
