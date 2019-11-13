@@ -6,9 +6,6 @@ from sklearn.preprocessing import LabelEncoder
 import numpy as np
 import pandas as pd
 
-import sys
-sys.path.append('code/common')
-
 class ClassificationTester:
     def pipelines_load(self, pipelines_path, summary_name):
         self.summary_ = load('{}/{}'.format(pipelines_path, summary_name))
