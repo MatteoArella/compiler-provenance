@@ -7,7 +7,7 @@ if __name__ == '__main__':
     from sklearn.tree import export_graphviz
     from subprocess import call
     import scikitplot as skplt
-    from compiler-provenance.common.classification_tester import ClassificationTester
+    from compiler_provenance.common.classification_tester import ClassificationTester
     from sys import argv, exit
 
     if len(argv) < 2:
@@ -15,19 +15,19 @@ if __name__ == '__main__':
         exit(1)
     path = argv[1]
 
-    test = load('compiler-provenance/optimization/test.joblib')
+    test = load('compiler_provenance/optimization/test.joblib')
     X_test, y_test = test['instructions'], test['target']
 
     tester = ClassificationTester() \
-                        .pipelines_load(pipelines_path='compiler-provenance/optimization/{}'.format(path), \
+                        .pipelines_load(pipelines_path='compiler_provenance/optimization/{}'.format(path), \
                                         summary_name='summary.joblib') \
                         .pipelines_predict(X_test)
 
     best_classifier_name, best_pipeline = tester.pipelines_scoring(y_test, scoring=f1_score, average='weighted')
-    dump(tester, 'compiler-provenance/optimization/tester.joblib', compress=('gzip', 6))
+    dump(tester, 'compiler_provenance/optimization/tester.joblib', compress=('gzip', 6))
     reports = tester.classification_reports()
-    dump(reports, 'compiler-provenance/optimization/reports.joblib', compress=('gzip', 6))
-    dump(best_pipeline, 'compiler-provenance/optimization/bestmodel.joblib', compress=('gzip', 6))
+    dump(reports, 'compiler_provenance/optimization/reports.joblib', compress=('gzip', 6))
+    dump(best_pipeline, 'compiler_provenance/optimization/bestmodel.joblib', compress=('gzip', 6))
 
     for (i, val), score in zip(reports.stack().iteritems(), tester.scores_):
         print('{}: {}'.format(i[0], score))
@@ -37,14 +37,14 @@ if __name__ == '__main__':
     # plot ROC curve, precision-recall curve, confusion matrix
     for classifier, predict, proba in zip(tester.classifiers_, tester.predictions_, tester.predictions_proba_):
         skplt.metrics.plot_roc(y_test, proba, title='')
-        plt.savefig('compiler-provenance/images/opt/curves/{}-roc-curve.pdf'.format(classifier), bbox_inches='tight')
+        plt.savefig('compiler_provenance/images/opt/curves/{}-roc-curve.pdf'.format(classifier), bbox_inches='tight')
         skplt.metrics.plot_precision_recall(y_test, proba, title='')
-        plt.savefig('compiler-provenance/images/opt/curves/{}-prec-recall-curve.pdf'.format(classifier), bbox_inches='tight')
+        plt.savefig('compiler_provenance/images/opt/curves/{}-prec-recall-curve.pdf'.format(classifier), bbox_inches='tight')
         skplt.metrics.plot_confusion_matrix(y_test, predict, title='', normalize=True)
-        plt.savefig('compiler-provenance/images/opt/{}-cm.pdf'.format(classifier), bbox_inches='tight')
+        plt.savefig('compiler_provenance/images/opt/{}-cm.pdf'.format(classifier), bbox_inches='tight')
 
     # plot classes count
-    data = load('compiler-provenance/train_dataset.joblib')
+    data = load('compiler_provenance/train_dataset.joblib')
     counts = data['opt'].value_counts(normalize=True).apply(lambda x: x*100)
     ax = counts.plot(kind='bar', rot=0)
     plt.ylim(0, 100)
@@ -52,14 +52,14 @@ if __name__ == '__main__':
         ax.text(i.get_x()+.08, i.get_height()/2, '%.2f%%' % i.get_height(), fontsize=16, color='white')
     plt.xlabel('Classes')
     plt.ylabel('Classes count (%)')
-    plt.savefig('compiler-provenance/images/opt/classes-count.pdf', bbox_inches='tight')
+    plt.savefig('compiler_provenance/images/opt/classes-count.pdf', bbox_inches='tight')
 
     # get best n-gram range
-    summary = load('compiler-provenance/optimization/{}/summary.joblib'.format(path))
+    summary = load('compiler_provenance/optimization/{}/summary.joblib'.format(path))
     print('Best N-gram range: {}'.format(summary.iloc[0]['params']['tfidf__ngram_range']))
 
     # plot decision tree graph (show only until depth 4)
-    pipeline = load('compiler-provenance/optimization/{}/pipeline-RandomForestClassifier.joblib'.format(path))
+    pipeline = load('compiler_provenance/optimization/{}/pipeline-RandomForestClassifier.joblib'.format(path))
     tfidf = pipeline['tfidf']
     clf = pipeline['clf']
 
@@ -69,14 +69,14 @@ if __name__ == '__main__':
                     rounded = True, proportion = False,
                     precision = 2, filled = True)
 
-    call(['dot', '-Tpdf', 'decision-tree.dot', '-o', 'compiler-provenance/images/opt/decision-tree.pdf'])
+    call(['dot', '-Tpdf', 'decision-tree.dot', '-o', 'compiler_provenance/images/opt/decision-tree.pdf'])
 
     # plot important features
-    pipeline = load('compiler-provenance/optimization/{}/pipeline-RandomForestClassifier.joblib'.format(path))
+    pipeline = load('compiler_provenance/optimization/{}/pipeline-RandomForestClassifier.joblib'.format(path))
     tfidf = pipeline['tfidf']
     clf = pipeline['clf']
     indices = np.argsort(clf.feature_importances_)[::-1][:10]
     features = [tfidf.get_feature_names()[i] for i in indices]
 
     plt.barh(features, clf.feature_importances_[indices], color='b', align='center')
-    plt.savefig('compiler-provenance/images/opt/feature-importances.pdf', bbox_inches='tight')
+    plt.savefig('compiler_provenance/images/opt/feature-importances.pdf', bbox_inches='tight')

@@ -9,12 +9,6 @@ class AbstractedAsmTransformer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X, y=None):
-        '''
-        result = []
-        for instruction in X:
-            result.append(' '.join([ i.split(' ')[0] for i in instruction ]))
-        return np.asarray(result)
-        '''
         return np.asarray([' '.join([ i.split(' ')[0] for i in instruction ]) for instruction in X])
 
     def fit_transform(self, X, y=None, **fit_params):
