@@ -28,14 +28,14 @@ Machine learning techniques provide a mechanism for constructing appropriate dec
 
 - **Compiler optimization level problem**
   ```
-    python3 -m compiler-provenance.optimization.generate_set
-    python3 -m compiler-provenance.optimization.train
-    python3 -m compiler-provenance.optimization.analyze_results <train-dir-path>
+    python3 -m compiler_provenance.optimization.generate_set
+    python3 -m compiler_provenance.optimization.train
+    python3 -m compiler_provenance.optimization.analyze_results <train-dir-path>
   ```
 
 - **Compiler provenance problem**
   ```
-    python3 -m compiler-provenance.compiler.generate_set
-    python3 -m compiler-provenance.compiler.train
-    python3 -m compiler-provenance.compiler.analyze_results <train-dir-path>
+    python3 -m compiler_provenance.compiler.generate_set
+    python3 -m compiler_provenance.compiler.train
+    python3 -m compiler_provenance.compiler.analyze_results <train-dir-path>
   ```
